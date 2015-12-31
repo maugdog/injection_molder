@@ -1,7 +1,7 @@
 var tools = require('./tools.js'); // Load misc tools
 var max31855 = require('max31855');
 var Thermostat = require('thermostat');
-//var ps = require('powerswitch');
+//var ps = require('powerswitch'); // Will only work on a system with GPIO pins! Otherwise you'll get build errors
 var util = require('util');
 var validator = require('validator');
 var clc = require('cli-color');
@@ -133,6 +133,10 @@ function DummySwitch() {
   this.setOff = function() {
     this.isOn = false;
   };
+
+  this.destroy = function() {
+    // No op
+  }
 }
 
 /***********************************************/
@@ -206,6 +210,7 @@ if(validator.isIn(units, ['c','k','f'])) {
 
 var exitHandler = function(options, err) {
   thermostat.stop();
+  powerswitch.destroy();
 
   if (options.cleanup) console.log('clean');
   if (err) console.log(err.stack);
