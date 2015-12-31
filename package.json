@@ -1,0 +1,33 @@
+{
+  "name": "injection_molder",
+  "version": "1.0.0",
+  "description": "Thermostat application for Raspberry PI using the Adafruit MAX31855 thermocouple amplifier and Power Tail Switch II",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maugdog/injection_molder.git"
+  },
+  "keywords": [
+    "injection",
+    "molder",
+    "thermostat",
+    "raspberry",
+    "pi"
+  ],
+  "author": "Max Montgelas",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/maugdog/injection_molder/issues"
+  },
+  "homepage": "https://github.com/maugdog/injection_molder#readme",
+  "dependencies": {
+    "readline-sync": "^1.2.22",
+    "cli-color": "^1.1.0",
+    "max31855": "file:../max31855",
+    "thermostat": "file:../thermostat",
+    "validator": "^4.4.0"
+  }
+}
