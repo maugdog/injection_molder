@@ -8,9 +8,13 @@ with hardware SPI. See [here](https://www.raspberrypi.org/documentation/hardware
 
 ## Usage
 
-    Connect the Raspberry Pi to the MAX31855 board using the SPI interface as documented (Raspberry Pi model B shown here) ![MAX31855 wiring instructions](./diagrams/max31855_wiring_diagram.jpg "Wiring diagram")
+Connect the Raspberry Pi to the MAX31855 board using the SPI interface as documented (Raspberry Pi model B shown here)
 
-    Connect the Raspberry Pi to the PowerSwitch Tail II using the GPIO interface as documented (Raspberry Pi model B shown here) ![PowerSwitch Tail wiring instructions](./diagrams/powerswitch_tail_wiring_diagram.jpg "Wiring diagram")
+![MAX31855 wiring instructions](./diagrams/max31855_wiring_diagram.jpg "Wiring diagram")
+
+Connect the Raspberry Pi to the PowerSwitch Tail II using the GPIO interface as documented (Raspberry Pi model B shown here)
+
+![PowerSwitch Tail wiring instructions](./diagrams/powerswitch_tail_wiring_diagram.jpg "Wiring diagram")
 
     $ sudo node app.js
 
