@@ -35,7 +35,7 @@ function thermostatOptions() {
 }
 
 var thermostat = new Thermostat(thermostatOptions());
-//var powerswitch = new ps();
+//var powerswitch = new ps(17);
 var powerswitch = new DummySwitch();
 
 thermostat.powerswitch = powerswitch;
@@ -194,7 +194,7 @@ if(validator.isIn(units, ['c','k','f'])) {
   if(validator.isFloat(target, {max: 1000})) {
     settings.temp = parseFloat(target);
 
-    var ready = readline_sync.question('Press Enter to begin...');
+    var ready = readline_sync.question('Press "Enter" to start...');
     thermostat.updateOptions(thermostatOptions());
     thermostat.run();
   } else {

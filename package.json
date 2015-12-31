@@ -28,6 +28,7 @@
     "cli-color": "^1.1.0",
     "max31855": "file:../max31855",
     "thermostat": "file:../thermostat",
+    "powerswitch": "file:../powerswitch",
     "validator": "^4.4.0"
   }
 }

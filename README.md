@@ -16,7 +16,13 @@ Connect the Raspberry Pi to the PowerSwitch Tail II using the GPIO interface as 
 
 ![PowerSwitch Tail wiring instructions](./diagrams/powerswitch_tail_wiring_diagram.jpg "Wiring diagram")
 
+Then run the app.js script...
+
     $ sudo node app.js
+
+## Command Line options
+
+  TODO
 
 ## Release History
 
