@@ -1,7 +1,6 @@
 var tools = require('./tools.js'); // Load misc tools
-var max31855 = require('max31855');
+var config = require('./config');
 var Thermostat = require('thermostat');
-//var ps = require('powerswitch'); // Will only work on a system with GPIO pins! Otherwise you'll get build errors
 var util = require('util');
 var validator = require('validator');
 var clc = require('cli-color');
@@ -35,12 +34,9 @@ function thermostatOptions() {
 }
 
 var thermostat = new Thermostat(thermostatOptions());
-//var powerswitch = new ps(17);
-var powerswitch = new DummySwitch();
-
-thermostat.powerswitch = powerswitch;
-//thermostat.thermoSensor = new max31855();
-thermostat.thermoSensor = new DummySensor({thermostat: thermostat, powerswitch: powerswitch, start: 20, increment: 0.5, decrement: 0.2});
+var powerSwitch = config.powerSwitch;
+thermostat.powerSwitch = powerSwitch;
+thermostat.thermoSensor = config.thermoSensor;
 thermostat.afterTempRead = function(sender) { outputStateToCLI(); };
 
 /***********************************************/
@@ -92,53 +88,6 @@ function toMAX31855UnitConstant(unitString) {
   }
 }
 
-
-/***********************************************/
-/******************* TESTING *******************/
-/***********************************************/
-
-// Dummy sensor for testing
-function DummySensor(options) {
-  this.thermostat = options.hasOwnProperty('thermostat') ? options.thermostat : null;
-  this.powerswitch = options.hasOwnProperty('powerswitch') ? options.powerswitch : null;
-  this.temp = options.start;
-  this.increment = options.increment;
-  this.decrement = options.decrement;
-
-  /** Return a random integer! */
-
-  this.readTemp = function(callback) {
-    if(this.powerswitch.isOn) {
-      this.temp += this.increment * (thermostat.isHeater ? 1 : -1);
-    } else {
-      this.temp -= this.decrement * (thermostat.isHeater ? 1 : -1);
-    }
-
-    if(callback) {
-      callback(Number((this.temp).toFixed(2)));
-    } else {
-      console.log('Error: Read request issued with no callback.');
-    }
-  };
-}
-
-// Dummy switch for testing
-function DummySwitch() {
-  this.isOn = false;
-
-  this.setOn = function() {
-    this.isOn = true;
-  };
-
-  this.setOff = function() {
-    this.isOn = false;
-  };
-
-  this.destroy = function() {
-    // No op
-  }
-}
-
 /***********************************************/
 /************* COMMAND LINE OUTPUT *************/
 /***********************************************/
@@ -166,10 +115,10 @@ function outputStateToCLI() {
   process.stdout.write(clc.erase.screen);
   process.stdout.write(clc.move.to(0, 0));
   if(thermostat.isHeater) {
-    var stateText = powerswitch.isOn ? clc.xterm(202)('ON') : clc.green('OFF');
+    var stateText = powerSwitch.isOn ? clc.xterm(202)('ON') : clc.green('OFF');
     var stateLabel = "Heater";
   } else {
-    var stateText = powerswitch.isOn ? clc.blue('● ON') : clc.green('○ OFF');
+    var stateText = powerSwitch.isOn ? clc.blue('● ON') : clc.green('○ OFF');
     var stateLabel = "Chiller";
   }
 
@@ -210,7 +159,7 @@ if(validator.isIn(units, ['c','k','f'])) {
 
 var exitHandler = function(options, err) {
   thermostat.stop();
-  powerswitch.destroy();
+  powerSwitch.destroy();
 
   if (options.cleanup) console.log('clean');
   if (err) console.log(err.stack);

@@ -16,6 +16,8 @@ Connect the Raspberry Pi to the PowerSwitch Tail II using the GPIO interface as 
 
 ![PowerSwitch Tail wiring instructions](./diagrams/powerswitch_tail_wiring_diagram.jpg "Wiring diagram")
 
+You will need to create a config.js file to define the thermo sensor and power switch objects to use (depending on your environment). Copy config.js.sample to use as a starting point.
+
 Then run the app.js script...
 
     $ sudo node app.js

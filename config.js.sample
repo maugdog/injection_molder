@@ -1,0 +1,67 @@
+/***********************************************/
+/***************** FOR TESTING *****************/
+/***********************************************/
+
+/*
+// Dummy sensor for testing
+function DummySensor(options) {
+  this.thermostat = options.hasOwnProperty('thermostat') ? options.thermostat : null;
+  this.powerSwitch = options.hasOwnProperty('powerSwitch') ? options.powerSwitch : null;
+  this.temp = options.start;
+  this.increment = options.increment;
+  this.decrement = options.decrement;
+
+  // Return a random integer!
+
+  this.readTemp = function(callback) {
+    if(this.powerSwitch.isOn) {
+      this.temp += this.increment * (thermostat.isHeater ? 1 : -1);
+    } else {
+      this.temp -= this.decrement * (thermostat.isHeater ? 1 : -1);
+    }
+
+    if(callback) {
+      callback(Number((this.temp).toFixed(2)));
+    } else {
+      console.log('Error: Read request issued with no callback.');
+    }
+  };
+}
+
+// Dummy switch for testing
+function DummySwitch() {
+  this.isOn = false;
+
+  this.setOn = function() {
+    this.isOn = true;
+  };
+
+  this.setOff = function() {
+    this.isOn = false;
+  };
+
+  this.destroy = function() {
+    // No op
+  }
+}
+*/
+
+/***********************************************/
+/***************** DEVELOPMENT *****************/
+/***********************************************/
+
+/*var powerSwitch = new DummySwitch();
+
+module.exports.thermoSensor = new DummySensor({thermostat: thermostat, powerSwitch: powerSwitch, start: 20, increment: 0.5, decrement: 0.2});
+module.exports.powerSwitch = powerSwitch;*/
+
+/***********************************************/
+/****************** PRODUCTION *****************/
+/***********************************************/
+
+var max31855 = require('max31855');
+var ps = require('powerswitch'); // Will only work on a system with GPIO pins! Otherwise you'll get build errors
+
+module.exports.SWITCH_GPIO_PIN = 18;
+module.exports.thermoSensor = new max31855();
+module.exports.powerSwitch = new ps(module.exports.SWITCH_GPIO_PIN);
