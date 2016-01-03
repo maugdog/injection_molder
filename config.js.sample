@@ -13,7 +13,7 @@ function DummySensor(options) {
 
   // Return a random integer!
 
-  this.readTemp = function(callback) {
+  this.readTempC = function(callback) {
     if(this.powerSwitch.isOn) {
       this.temp += this.increment * (thermostat.isHeater ? 1 : -1);
     } else {
