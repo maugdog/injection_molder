@@ -10,6 +10,10 @@ var readlineSync = require('readline-sync');
 /************** INITIALIZATION *****************/
 /***********************************************/
 
+// Use -settings or -s to load a specified saved configuration
+// Use -quiet or -q to run silently
+var args = tools.processCLArgs({});
+
 // Read any command line arguments and establish default options
 var settings = null; /*tools.processCLArgs({
   mode: 'heat', // heat || cool.
@@ -23,8 +27,12 @@ var settings = null; /*tools.processCLArgs({
 
 // Load any saved settings
 var fs = require("fs");
-var stats = fs.statSync('settings.json');
-var settingsFile = stats ? fs.readFileSync('settings.json') : null;
+try {
+  fs.statSync('settings.json');
+  var settingsFile = fs.readFileSync('settings.json');
+} catch(error) {
+  var settingsFile = null;
+}
 
 var savedSettings = {};
 
@@ -34,61 +42,72 @@ if(settingsFile) {
 
 var optionsList = Object.keys(savedSettings);
 if(optionsList.length) {
-  var newSettingsLabel = 'New settings...';
-  optionsList.push(newSettingsLabel);
-  var selectedFileIndex = readlineSync.keyInSelect(optionsList, 'Select a preset settings file, or make a new one:', {cancel: false});
-  if(selectedFileIndex != optionsList.length-1) {
-    settings = savedSettings[optionsList[selectedFileIndex]];
+  if(args.hasOwnProperty('settings') && savedSettings.hasOwnProperty(args.settings)) {
+    settings = savedSettings[args.settings];
+  }
+  if(args.hasOwnProperty('s') && savedSettings.hasOwnProperty(args.s)) {
+    settings = savedSettings[args.s];
+  }
+  if(!settings) {
+    var newSettingsLabel = 'New settings...';
+    optionsList.push(newSettingsLabel);
+    var selectedFileIndex = readlineSync.keyInSelect(optionsList, 'Select a preset settings file, or make a new one: ', {cancel: false});
+    if(selectedFileIndex != optionsList.length-1) {
+      settings = savedSettings[optionsList[selectedFileIndex]];
+    }
   }
 }
-
-console.log('SETTINGS: ', JSON.stringify(settings));
 
 // If we still have no settings, then prompt the user
 if(!settings) {
   settings = {};
-  var modes = ['heat','cool'];
-  modeIndex = readlineSync.keyInSelect(modes, 'Are we heating or cooling?', {cancel: false});
-  settings['mode'] = modes[modeIndex];
-  settings['units'] = readlineSync.question('Units? (c/k/f): ');
-  if(validator.isIn(settings['units'], ['c','k','f'])) {
-    settings['temp'] = readlineSync.question(util.format('Target temperature? (°%s): ', settings.units));
-    if(validator.isFloat(settings['temp'], {max: 1000})) {
-      settings['temp'] = parseFloat(settings['temp']);
-      settings['tolerance'] = readlineSync.question(util.format('How much tolerance from the target temp should be allowed? (between 0 and 50°%s)', settings.units));
-      if(validator.isFloat(settings['tolerance'], {min: 1, max: 50})) {
-        settings['tolerance'] = parseFloat(settings['tolerance']);
-        settings['frequency'] = readlineSync.question('How often should the temperature sensor be sampled? (specify 500 to 60000 milliseconds between samples)');
-        if(validator.isInt(settings['frequency'], {min: 500, max: 60000})) {
-          settings['frequency'] = parseInt(settings['frequency'], 10);
-          settings['buffer'] = readlineSync.question('How much time should be enforced between each switch event? (specify 500 to 15000 millisecond buffer between switch toggles)');
-          if(validator.isInt(settings['buffer'], {min: 500, max: 15000})) {
-            settings['buffer'] = parseInt(settings['buffer'], 10);
-            if(readlineSync.keyInYNStrict('Save these settings for later use?')) {
-              var settingsName = readlineSync.question('Specify a name for these settings:');
-              savedSettings[settingsName] = settings;
-              fs.writeFileSync('settings.json', JSON.stringify(savedSettings));
 
-              var ready = readlineSync.question('Press "Enter" to start...');
+  var mode = readlineSync.question('Is the thermostat heating or cooling?  (h/c): ');
+  if(validator.isIn(mode, ['h','c'])) {
+    settings['mode'] = mode === 'h' ? 'heat' : "cool";
+    settings['units'] = readlineSync.question('Units? (c/k/f): ');
+    if(validator.isIn(settings['units'], ['c','k','f'])) {
+      settings['temp'] = readlineSync.question(util.format('Target temperature? (°%s): ', settings.units));
+      if(validator.isFloat(settings['temp'], {max: 1000})) {
+        settings['temp'] = parseFloat(settings['temp']);
+        settings['tolerance'] = readlineSync.question(util.format('How much tolerance from the target temp should be allowed? (between 0 and 50°%s) ', settings.units));
+        if(validator.isFloat(settings['tolerance'], {min: 1, max: 50})) {
+          settings['tolerance'] = parseFloat(settings['tolerance']);
+          settings['frequency'] = readlineSync.question('How often should the temperature sensor be sampled? (specify 500 to 60000 milliseconds between samples) ');
+          if(validator.isInt(settings['frequency'], {min: 500, max: 60000})) {
+            settings['frequency'] = parseInt(settings['frequency'], 10);
+            settings['buffer'] = readlineSync.question('How much time should be enforced between each switch event? (specify 500 to 15000 millisecond buffer between switch toggles) ');
+            if(validator.isInt(settings['buffer'], {min: 500, max: 15000})) {
+              settings['buffer'] = parseInt(settings['buffer'], 10);
+              if(readlineSync.keyInYNStrict('Save these settings for later use? ')) {
+                var settingsName = readlineSync.question('Specify a name for these settings: ');
+                savedSettings[settingsName] = settings;
+                fs.writeFileSync('settings.json', JSON.stringify(savedSettings));
+
+                var ready = readlineSync.question('Press "Enter" to start...');
+              }
+            } else {
+              console.error('Error! Buffer must be an integer between 500 and 15000.');
+              process.exit(0);
             }
           } else {
-            console.error('Error! Buffer must be an integer between 500 and 15000.');
+            console.error('Error! Frequency must be an integer between 500 and 60000.');
             process.exit(0);
           }
         } else {
-          console.error('Error! Frequency must be an integer between 500 and 60000.');
+          console.error('Error! Tolerance must be a number between 0 and 50.');
           process.exit(0);
         }
       } else {
-        console.error('Error! Tolerance must be a number between 0 and 50.');
+        console.error('Error! Target temp must be a number less than 1000.');
         process.exit(0);
       }
     } else {
-      console.error('Error! Target temp must be a number less than 1000.');
+      console.error('Error! Unrecognized units. Please use "c", "k", or "f".');
       process.exit(0);
     }
   } else {
-    console.error('Error! Unrecognized units. Please use "c", "k", or "f".');
+    console.error('Error! Unrecognized mode. Please use "h", or "c".');
     process.exit(0);
   }
 }
@@ -109,7 +128,9 @@ var thermostat = new Thermostat(thermostatOptions());
 var powerSwitch = config.powerSwitch;
 thermostat.powerSwitch = powerSwitch;
 thermostat.thermoSensor = config.thermoSensor;
-thermostat.afterTempRead = function(sender) { outputStateToCLI(); };
+if(!args.hasOwnProperty('quiet') && !args.hasOwnProperty('q')) {
+  thermostat.afterTempRead = function(sender) { outputStateToCLI(); };
+}
 
 thermostat.run();
 
